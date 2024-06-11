@@ -1,0 +1,19 @@
+# Configuraciones de compilación específicas para la construcción del kernel
+
+[unstable]
+build-std = ["core", "compiler_builtins"]  # Especifica las bibliotecas estándar de Rust que necesitas compilar desde cero.
+build-std-features = ["compiler-builtins-mem"]  # Habilita características específicas en la biblioteca builtins.
+
+[build]
+target = "src/arch/i386/i386.json"  # Asegúrate de especificar la ruta correcta al archivo de configuración del target.
+
+[target.'cfg(target_arch = "x86")']
+#rustflags = [
+#  "-C", "link-arg=-nostartfiles",  # Evita que se enlacen los archivos de inicio estándar.
+#  "-C", "link-arg=-static",        # Genera un binario estático.
+#  "-C", "link-arg=-Tlinker.ld"     # Usa tu script de enlace personalizado.
+#]
+
+# Configuraciones de herramientas adicionales
+[term]
+#verbose = true  # Habilita la salida detallada del proceso de compilación para facilitar la depuración.

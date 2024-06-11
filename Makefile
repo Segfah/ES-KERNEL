@@ -15,8 +15,8 @@ dirGrub      := $(dirBoot)/grub
 dirSrc       := src
 
 # Rutas de archivos
-pathBinKfs   := # no se aun -> nombre del target
-linkerFile   := # linker file
+pathBinKfs   := target/i386/debug/es-kernel
+linkerFile   := linker.ld
 grubCfgFile  := grub.cfg
 
 # Flags para ensamblador
@@ -38,7 +38,7 @@ build:
 
 iso:
 	@$(MKDIR) $(dirGrub)
-#	@cp $(pathBinKfs) $(dirBoot)
+	@cp $(pathBinKfs) $(dirBoot)
 	@cp $(grubCfgFile) $(dirGrub)
 	@$(MKRESCUE) -o $(isoName) $(dirIso)
 	@printf "$(GREEN)Iso creado$(RESET)\n"
