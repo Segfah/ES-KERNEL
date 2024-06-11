@@ -3,3 +3,4 @@ build/
 kfs.iso
 iso/
 kernel
+Cargo.lock
