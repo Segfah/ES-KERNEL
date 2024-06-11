@@ -1,6 +1,6 @@
 /target
 build/
-kfs.iso
+*.iso
 iso/
 kernel
 Cargo.lock
