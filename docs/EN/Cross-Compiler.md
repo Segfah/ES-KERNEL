@@ -1,19 +1,19 @@
-# ... Cross-Compiler
+# Preparing the Cross-Compiler
 
-### 
+### Create the folder where you will have your source code
 ```
 mkdir -pv ~/.bin
 cd ~/.bin
 ```
 
-### 
+### Preparing the prefix, target, and path
 ```
 export PREFIX="$HOME/.bin"
 export TARGET=i386-elf
 export PATH="$PREFIX/bin:$PATH"
 ```
 
-### 
+### Downloading and decompressing
 ```
 wget https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz
 wget https://ftp.gnu.org/gnu/bison/bison-3.7.4.tar.gz
@@ -30,7 +30,7 @@ tar xvzf binutils-2.35.tar.gz
 tar xvzf texinfo-6.8.tar.gz
 ```
 
-### 
+### Installing each package
 ```
 cd binutils-2.35
 ./configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror
@@ -74,7 +74,7 @@ make install
 cd ..
 ```
 
-## 
+## Cleaning the source code (optional)
 ```
 rm -rf binutils-2.35 \
     m4-1.4.19 \
@@ -85,5 +85,5 @@ rm -rf binutils-2.35 \
 ```
 
 ----
-## 
+## References
 https://wiki.osdev.org/GCC_Cross-Compiler
