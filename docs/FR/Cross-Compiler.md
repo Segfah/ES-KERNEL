@@ -9,7 +9,7 @@ cd ~/.bin
 ### Preparation du prefix, target et path
 ```
 export PREFIX="$HOME/.bin"
-export TARGET=i686-elf
+export TARGET=i386-elf
 export PATH="$PREFIX/bin:$PATH"
 ```
 
