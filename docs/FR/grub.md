@@ -9,6 +9,8 @@ Le fichier grub.cfg est un fichier de configuration utilisé par GRUB, un charge
 
 `set timeout=15:` Fixe le délai d'attente avant le démarage automatiquement du système d'exploitation spécifié`  
 
+`set default=0:` Spécifie l'entrée de menu qui sera sélectionnée par défaut. L'index commence à 0.
+
 `menuentry "KFS":` définis une entrée de menu dans le menu de démarrage de GRUB 
 
 * `multiboot /boot/kernel:` Charge un fichier noyau de système d'exploitation en mémoire et le démarre
