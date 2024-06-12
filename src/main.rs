@@ -3,7 +3,15 @@
 #![no_std] // ne pas lier la bibliothèque standard Rust
 #![no_main] // désactiver tous les points d'entrée Rust
 
+
+mod arch {
+    pub mod boot;
+}
+
+
 use core::panic::PanicInfo;
+
+
 
 /// Cette fonction est invoquée lorsque le système panique
 #[panic_handler]
