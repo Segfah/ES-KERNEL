@@ -25,8 +25,9 @@ stack_space:
 */
 
 /// Multiboot header
-#[repr(C)]
-#[repr(align(4))]
+//#[repr(C)]
+//#[repr(align(4))]
+//#[no_mangle]
 pub struct MultibootHeader {
     pub magic: u32,
     pub flags: u32,
@@ -45,6 +46,6 @@ const fn calculate_checksum(magic: u32, flags: u32) -> u32 {
 
 // el encabezado multiboot esté en una sección específica
 #[link_section = ".multiboot_header"]
-#[no_mangle]
+
 pub static MULTIBOOT: MultibootHeader = MULTIBOOT_HEADER;
 
