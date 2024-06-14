@@ -4,10 +4,8 @@
 #![no_main] // désactiver tous les points d'entrée Rust
 
 
-mod arch {
-    pub mod boot;
-}
-
+mod arch    { pub mod boot; }
+mod vga     { mod vga_buffer; }
 
 use core::panic::PanicInfo;
 
