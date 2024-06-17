@@ -66,7 +66,8 @@ struct Buffer {
 */
 
 pub struct Writer {
-    column_position: usize,
+    pos_x: usize,
+    pos_y: usize,
     color_code: ColorCode,
     buffer: &'static mut Buffer,
 }
@@ -76,19 +77,19 @@ impl Writer {
         match byte {
             b'\n' => self.new_line(),
             byte => {
-                if self.column_position >= BUFFER_WIDTH {
+                if self.pos_x >= BUFFER_WIDTH {
                     self.new_line();
                 }
 
-                let row = BUFFER_HEIGHT - 1;
-                let col = self.column_position;
+                let row = self.pos_y;
+                let col = self.pos_x;
 
                 let color_code = self.color_code;
                 self.buffer.chars[row][col] = ScreenChar {
                     ascii_character: byte,
                     color_code,
                 };
-                self.column_position += 1;
+                self.pos_x += 1;
             }
         }
     }
@@ -127,7 +128,8 @@ impl fmt::Write for Writer {
 pub fn print_something() {
     use core::fmt::Write;
     let mut writer = Writer {
-        column_position: 0,
+        pos_x: 0,
+        pos_y: 24,
         color_code: ColorCode::new(Color::Yellow, Color::Black),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
     };
