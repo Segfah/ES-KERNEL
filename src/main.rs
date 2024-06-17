@@ -5,7 +5,8 @@
 
 
 mod arch    { pub mod boot; }
-mod vga     { mod vga_buffer; }
+mod vga     { pub mod vga_buffer; }
+use crate::vga::vga_buffer;
 
 use core::panic::PanicInfo;
 
@@ -20,17 +21,7 @@ fn panic(_info: &PanicInfo) -> ! {
 /// Punto de entrada del bootloader
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    // cette fonction est le point d'entrée, puisque le lieur cherche une fonction
-    // nommée `_start` par défaut
-    let vga_buffer = 0xb8000 as *mut u8;
-    let message = b"42";
-
-    for (i, &byte) in message.iter().enumerate() {
-        unsafe {
-            *vga_buffer.offset(i as isize * 2) = byte;
-            *vga_buffer.offset(i as isize * 2 + 1) = 0x0F; // Color blanco sobre negro
-        }
-    }
+    vga_buffer::print_something();
 
     loop {}
 }
