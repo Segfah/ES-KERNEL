@@ -66,8 +66,7 @@ struct Buffer {
 */
 
 pub struct Writer {
-    pos_x: usize,
-    pos_y: usize,
+    column_position: usize,
     color_code: ColorCode,
     buffer: &'static mut Buffer,
 }
@@ -77,19 +76,19 @@ impl Writer {
         match byte {
             b'\n' => self.new_line(),
             byte => {
-                if self.pos_x >= BUFFER_WIDTH {
+                if self.column_position >= BUFFER_WIDTH {
                     self.new_line();
                 }
 
-                let row = self.pos_y;
-                let col = self.pos_x;
+                let row = BUFFER_HEIGHT - 1;
+                let col = self.column_position;
 
                 let color_code = self.color_code;
                 self.buffer.chars[row][col] = ScreenChar {
                     ascii_character: byte,
                     color_code,
                 };
-                self.pos_x += 1;
+                self.column_position += 1;
             }
         }
     }
@@ -102,7 +101,7 @@ impl Writer {
             }
         }
         self.clear_row(BUFFER_HEIGHT - 1);
-        self.pos_x = 0;
+        self.column_position = 0;
     }
 
     fn clear_row(&mut self, row: usize) {
@@ -138,28 +137,12 @@ impl fmt::Write for Writer {
 }
 
 
-// Función de impresión tests
-pub fn print_something() {
-    use core::fmt::Write;
-    let mut writer = Writer {
-        pos_x: 0,
-        pos_y: 24,
-        color_code: ColorCode::new(Color::Yellow, Color::Black),
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    };
-
-    writer.write_byte(b'H');
-    writer.write_string("ello! ");
-    write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
-}
-
 use lazy_static::lazy_static;
 use spin::Mutex;
 
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
-        pos_x: 0,
-        pos_y: 24,
+        column_position: 0,
         color_code: ColorCode::new(Color::Yellow, Color::Black),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
     });

@@ -14,8 +14,8 @@ use core::panic::PanicInfo;
 
 /// Cette fonction est invoquée lorsque le système panique
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
-    println!("{}", _info);
+fn panic(info: &PanicInfo) -> ! {
+    println!("{}", info);
     loop {}
 }
 
@@ -23,6 +23,5 @@ fn panic(_info: &PanicInfo) -> ! {
 #[no_mangle]
 pub extern "C" fn _start() {
     println!("Hello World{}", "!");
-    panic!("Some panic message");
     loop {}
 }
