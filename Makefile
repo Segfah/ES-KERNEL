@@ -30,7 +30,7 @@ RESET        := \033[m
 # Reglas principales
 .PHONY: all clean fclean re run build iso
 
-all: build iso
+all: build iso run
 
 build:
 	@cargo build
@@ -51,5 +51,5 @@ fclean: clean
 
 re: fclean all
 
-run: iso
+run: build iso
 	@$(qemu) -s -cdrom $(isoName)
