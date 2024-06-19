@@ -67,13 +67,14 @@ struct Buffer {
 
 pub struct Writer {
     column_position: usize,
+    row_position: usize,
     color_code: ColorCode,
     buffer: &'static mut Buffer,
 }
 
 impl Writer {
     pub fn write_byte(&mut self, byte: u8) {
-        let row = BUFFER_HEIGHT - 1;
+        let row = self.row_position;
         let col = self.column_position;
         let color_code = self.color_code;
 
@@ -88,6 +89,7 @@ impl Writer {
                         color_code,
                     };
                 }
+                update_cursor(row, col);
             },
             byte => {
                 if self.column_position >= BUFFER_WIDTH {
@@ -99,11 +101,19 @@ impl Writer {
                     color_code,
                 };
                 self.column_position += 1;
+                update_cursor(row, col + 1);
             }
         }
     }
 
     fn new_line(&mut self) {
+        // if self.row_position + 1 >= BUFFER_HEIGHT {
+        //     self.scroll_up();
+        // } else {
+        //     self.row_position += 1;
+        // }
+        // self.clear_row(BUFFER_HEIGHT - 1);
+        // self.column_position = 0;
         for row in 1..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
                 let character = self.buffer.chars[row][col];
@@ -112,6 +122,7 @@ impl Writer {
         }
         self.clear_row(BUFFER_HEIGHT - 1);
         self.column_position = 0;
+        update_cursor(BUFFER_HEIGHT - 1, 0);
     }
 
     fn clear_row(&mut self, row: usize) {
@@ -149,10 +160,12 @@ impl fmt::Write for Writer {
 
 use lazy_static::lazy_static;
 use spin::Mutex;
+use core::arch::asm;
 
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
+        row_position: BUFFER_HEIGHT - 1,
         color_code: ColorCode::new(Color::Yellow, Color::Black),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
     });
@@ -173,4 +186,28 @@ macro_rules! println {
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
     WRITER.lock().write_fmt(args).unwrap();
+}
+
+// Funcion para iteractuar con los puertos
+pub fn outb(port: u16, cmd: u8) {
+    unsafe { asm!("out dx, al", in("dx") port, in("al") cmd); }
+}
+
+pub fn inb(port: u16) -> u8 {
+    let mut input_byte: u8;
+    unsafe { asm!("in al, dx", in("dx") port, out("al") input_byte); }
+    input_byte
+}
+
+pub fn update_cursor(row: usize, col: usize) {
+
+    let pos = row * BUFFER_WIDTH + col;
+
+    unsafe {
+        outb(0x3D4, 0x0F);
+        outb(0x3D5, (pos & 0xFF) as u8);
+        
+        outb(0x3D4, 0x0E);
+        outb(0x3D5, ((pos >> 8) & 0xFF) as u8);
+    }
 }

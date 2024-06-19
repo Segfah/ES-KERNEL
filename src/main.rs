@@ -36,6 +36,7 @@ pub fn inb(port: u16) -> u8 {
 /// Punto de entrada del bootloader
 #[no_mangle]
 pub extern "C" fn _start() {
+    enable_cursor(14, 15);
     println!("Hello World{}", "!");
 	loop {
 		if inb(0x64) & 1 != 0 {
@@ -105,7 +106,7 @@ static KEYBOARD: [char; 256] = [
     ',',     // 0x33 - ,
     '.',     // 0x34 - .
     '/',     // 0x35 - /
-    '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+    '\0', '*', '\0', ' ', '\0', '\0', '\0',
     '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
     '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
     '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
@@ -125,4 +126,15 @@ static KEYBOARD: [char; 256] = [
 
 fn keyboard_to_ascii(key: u8) -> char {
 	return KEYBOARD[key as usize];
+}
+
+pub fn enable_cursor(cursor_start: u8, cursor_end: u8) {
+
+    unsafe {
+        outb(0x3D4, 0x0A);
+        outb(0x3D5, (inb(0x3D5) & 0xC0) | cursor_start);
+
+        outb(0x3D4, 0x0B);
+        outb(0x3D5, (inb(0x3D5) & 0xE0) | cursor_end);
+    }
 }
