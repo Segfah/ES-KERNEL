@@ -54,7 +54,6 @@ struct ScreenChar {
 pub const BUFFER_HEIGHT: usize = 25;
 pub const BUFFER_WIDTH: usize = 80;
 
-#[derive(Clone)]
 #[repr(transparent)]
 pub struct Buffer {
     chars: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
@@ -182,7 +181,7 @@ lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
         row_position: BUFFER_HEIGHT - 1,
-        color_code: ColorCode::new(Color::Yellow, Color::Black),
+        color_code: ColorCode::new(Color::White, Color::Black),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
     });
 }
@@ -226,11 +225,4 @@ pub fn update_cursor(row: usize, col: usize) {
         outb(0x3D4, 0x0E);
         outb(0x3D5, ((pos >> 8) & 0xFF) as u8);
     }
-}
-
-#[derive(Clone)]
-pub struct ScreenState {
-    pub buffer: Buffer,
-    pub column_position: usize,
-    pub row_position: usize,
 }
