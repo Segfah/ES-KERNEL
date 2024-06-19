@@ -81,6 +81,9 @@ impl Writer {
         match byte {
             b'\n' => self.new_line(),
             0x08 => {
+                if self.column_position == 0 {
+                    return;
+                }
                 if self.column_position > 0 {
                     self.column_position -= 1;
                     let col = self.column_position;
@@ -89,7 +92,7 @@ impl Writer {
                         color_code,
                     };
                 }
-                update_cursor(row, col);
+                update_cursor(row, col - 1);
             },
             byte => {
                 if self.column_position >= BUFFER_WIDTH {
