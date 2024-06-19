@@ -3,14 +3,13 @@
 #![no_std] // ne pas lier la bibliothèque standard Rust
 #![no_main] // désactiver tous les points d'entrée Rust
 
-
 mod arch    { pub mod boot; }
 mod vga     { pub mod vga_buffer; }
+
+use crate::vga::vga_buffer::{Writer, ColorCode, Color, BUFFER_HEIGHT, Buffer};
 use crate::vga::vga_buffer;
-
 use core::panic::PanicInfo;
-
-
+use core::arch::asm;
 
 /// Cette fonction est invoquée lorsque le système panique
 #[panic_handler]
@@ -18,10 +17,6 @@ fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
     loop {}
 }
-
-
-use core::arch::asm;
-
 
 pub fn outb(port: u16, cmd: u8) {
 	unsafe { asm!("out dx, al", in("dx") port, in("al") cmd); }
@@ -36,7 +31,13 @@ pub fn inb(port: u16) -> u8 {
 /// Punto de entrada del bootloader
 #[no_mangle]
 pub extern "C" fn _start() {
-    enable_cursor(14, 15);
+    let mut screens = [
+        Screen::new(ColorCode::new(Color::Yellow, Color::Black)),
+        Screen::new(ColorCode::new(Color::Cyan, Color::Black)),
+    ];
+    let mut current_screen = 0;
+    screens[current_screen].clear();
+    // enable_cursor(14, 15);
     println!("Hello World{}", "!");
 	loop {
 		if inb(0x64) & 1 != 0 {
@@ -45,10 +46,58 @@ pub extern "C" fn _start() {
 			let keycode = keyboard_to_ascii(inb);
             // println!("nani {} nani\n", keycode);
 
-			if keycode != '\0'
-				{print!("{}", keycode);}
-		}
-	}
+            match keycode {
+                '1' | '2' => {
+                    let new_screen = (keycode as u8 - b'1') as usize;
+                    if new_screen != current_screen {
+                        screens[current_screen].clear();
+                        // screens[current_screen].hide_cursor();
+                        current_screen = new_screen;
+                        println!("Switched to screen {}\n", keycode);
+                        // screens[current_screen].show_cursor();
+                    }
+                }
+                _ => {
+                    if keycode != '\0' {
+                        screens[current_screen].write_char(keycode);
+                    }
+                }
+            }
+	    }
+    }
+}
+
+/// Structure representing a single screen
+struct Screen {
+    writer: Writer,
+}
+
+impl Screen {
+    /// Create a new screen with a specific color scheme
+    fn new(color_code: ColorCode) -> Screen {
+        Screen {
+            writer: Writer {
+                column_position: 0,
+                row_position: BUFFER_HEIGHT - 1,
+                color_code,
+                buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+            },
+        }
+    }
+
+    /// Clear the screen
+    fn clear(&mut self) {
+        for _ in 0..BUFFER_HEIGHT {
+            self.writer.new_line();
+        }
+        self.writer.column_position = 0;
+        self.writer.row_position = BUFFER_HEIGHT - 1;
+    }
+
+    /// Write a character to the screen
+    fn write_char(&mut self, c: char) {
+        self.writer.write_byte(c as u8);
+    }
 }
 
 static KEYBOARD: [char; 256] = [

@@ -30,10 +30,10 @@ pub enum Color {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
-struct ColorCode(u8);
+pub struct ColorCode(u8);
 
 impl ColorCode {
-    fn new(foreground: Color, background: Color) -> ColorCode {
+    pub fn new(foreground: Color, background: Color) -> ColorCode {
         ColorCode((background as u8) << 4 | (foreground as u8))
     }
 }
@@ -51,11 +51,12 @@ struct ScreenChar {
     color_code: ColorCode,
 }
 
-const BUFFER_HEIGHT: usize = 25;
-const BUFFER_WIDTH: usize = 80;
+pub const BUFFER_HEIGHT: usize = 25;
+pub const BUFFER_WIDTH: usize = 80;
 
+#[derive(Clone)]
 #[repr(transparent)]
-struct Buffer {
+pub struct Buffer {
     chars: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 
@@ -66,10 +67,10 @@ struct Buffer {
 */
 
 pub struct Writer {
-    column_position: usize,
-    row_position: usize,
-    color_code: ColorCode,
-    buffer: &'static mut Buffer,
+    pub column_position: usize,
+    pub row_position: usize,
+    pub color_code: ColorCode,
+    pub buffer: &'static mut Buffer,
 }
 
 impl Writer {
@@ -92,7 +93,7 @@ impl Writer {
                         color_code,
                     };
                 }
-                update_cursor(row, col - 1);
+                self.update_cursor(row, col - 1);
             },
             byte => {
                 if self.column_position >= BUFFER_WIDTH {
@@ -104,12 +105,12 @@ impl Writer {
                     color_code,
                 };
                 self.column_position += 1;
-                update_cursor(row, col + 1);
+                self.update_cursor(row, col + 1);
             }
         }
     }
 
-    fn new_line(&mut self) {
+    pub fn new_line(&mut self) {
         // if self.row_position + 1 >= BUFFER_HEIGHT {
         //     self.scroll_up();
         // } else {
@@ -125,16 +126,28 @@ impl Writer {
         }
         self.clear_row(BUFFER_HEIGHT - 1);
         self.column_position = 0;
-        update_cursor(BUFFER_HEIGHT - 1, 0);
+        self.update_cursor(BUFFER_HEIGHT - 1, 0);
     }
 
-    fn clear_row(&mut self, row: usize) {
+    pub fn clear_row(&mut self, row: usize) {
         let blank = ScreenChar {
             ascii_character: b' ',
             color_code: self.color_code,
         };
         for col in 0..BUFFER_WIDTH {
             self.buffer.chars[row][col]= blank;
+        }
+    }
+
+    pub fn update_cursor(&mut self, row: usize, col: usize) {
+        let pos = row * BUFFER_WIDTH + col;
+
+        unsafe {
+            outb(0x3D4, 0x0F);
+            outb(0x3D5, (pos & 0xFF) as u8);
+
+            outb(0x3D4, 0x0E);
+            outb(0x3D5, ((pos >> 8) & 0xFF) as u8);
         }
     }
 
@@ -186,7 +199,7 @@ macro_rules! println {
 }
 
 #[doc(hidden)]
-pub fn _print(args: fmt::Arguments) {
+pub fn _print(args: ::core::fmt::Arguments) {
     use core::fmt::Write;
     WRITER.lock().write_fmt(args).unwrap();
 }
@@ -213,4 +226,11 @@ pub fn update_cursor(row: usize, col: usize) {
         outb(0x3D4, 0x0E);
         outb(0x3D5, ((pos >> 8) & 0xFF) as u8);
     }
+}
+
+#[derive(Clone)]
+pub struct ScreenState {
+    pub buffer: Buffer,
+    pub column_position: usize,
+    pub row_position: usize,
 }
