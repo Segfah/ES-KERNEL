@@ -33,4 +33,9 @@ impl Screen {
         self.writer.write_byte(c as u8);
     }
 
+    /// Write a string to the screen
+    pub fn write_str(&mut self, s: &str) {
+        self.writer.write_string(s);
+    }
+
 }

@@ -5,6 +5,7 @@
 
 mod arch    { pub mod boot; }
 mod vga     { pub mod vga_buffer; }
+// mod memory;
 mod screen;
 
 use crate::vga::vga_buffer::{ColorCode, Color, BUFFER_HEIGHT};
@@ -33,13 +34,14 @@ pub fn inb(port: u16) -> u8 {
 /// Punto de entrada del bootloader
 #[no_mangle]
 pub extern "C" fn _start() {
+    // Init Global Description Table
+    // init_gdt();
     let mut screens = [
         Screen::new(ColorCode::new(Color::Yellow, Color::Black)),
         Screen::new(ColorCode::new(Color::Cyan, Color::Black)),
     ];
     let mut current_screen = 0;
     screens[current_screen].clear();
-    // enable_cursor(14, 15);
     println!("Hello World{}", "!");
 	loop {
 		if inb(0x64) & 1 != 0 {
@@ -56,6 +58,9 @@ pub extern "C" fn _start() {
                         current_screen = new_screen;
                         println!("Switched to screen {}\n", keycode);
                     }
+                }
+                '\t' => {
+                    screens[current_screen].write_str("    ");
                 }
                 _ => {
                     if keycode != '\0' {
@@ -176,15 +181,4 @@ static KEYBOARD: [char; 256] = [
 
 fn keyboard_to_ascii(key: u8) -> char {
 	return KEYBOARD[key as usize];
-}
-
-pub fn enable_cursor(cursor_start: u8, cursor_end: u8) {
-
-    unsafe {
-        outb(0x3D4, 0x0A);
-        outb(0x3D5, (inb(0x3D5) & 0xC0) | cursor_start);
-
-        outb(0x3D4, 0x0B);
-        outb(0x3D5, (inb(0x3D5) & 0xE0) | cursor_end);
-    }
 }
