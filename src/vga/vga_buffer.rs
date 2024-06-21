@@ -1,10 +1,9 @@
 // in src/vga_buffer.rs
 
-/*
-** ---------------------------
-** Colores
-** ---------------------------
-*/
+use core::fmt;
+use lazy_static::lazy_static;
+use spin::Mutex;
+use core::arch::asm;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -59,12 +58,12 @@ pub struct Buffer {
     chars: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 
-/*
-** ---------------------------
-** función de escritura
-** ---------------------------
-*/
-
+/* Estructura Writer
+** column_position: posición de la columna
+** row_position: posición de la fila
+** color_code: código de color
+** buffer: buffer
+**/
 pub struct Writer {
     pub column_position: usize,
     pub row_position: usize,
@@ -72,6 +71,16 @@ pub struct Writer {
     pub buffer: &'static mut Buffer,
 }
 
+/*
+** Funcion para iteractuar con los puertos
+** port: puerto
+** cmd: comando
+*/
+pub fn outb(port: u16, cmd: u8) {
+	unsafe { asm!("out dx, al", in("dx") port, in("al") cmd); }
+}
+
+// Implementación de la estructura Writer
 impl Writer {
     pub fn write_byte(&mut self, byte: u8) {
         let row = self.row_position;
@@ -155,7 +164,7 @@ impl Writer {
 }
 
 // Implementación de la función write! de la macro de formato de Rust (para poder imprimir numero flotantes y otras cosas.)
-use core::fmt;
+
 impl fmt::Write for Writer {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         self.write_string(s);
@@ -163,10 +172,7 @@ impl fmt::Write for Writer {
     }
 }
 
-use lazy_static::lazy_static;
-use spin::Mutex;
-use core::arch::asm;
-
+// Funcion para iteractuar con los puertos
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
@@ -176,6 +182,7 @@ lazy_static! {
     });
 }
 
+// Implementación de las macros print! y println! de Rust
 #[macro_export]
 macro_rules! print {
     ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
@@ -191,9 +198,4 @@ macro_rules! println {
 pub fn _print(args: ::core::fmt::Arguments) {
     use core::fmt::Write;
     WRITER.lock().write_fmt(args).unwrap();
-}
-
-// Funcion para iteractuar con los puertos
-pub fn outb(port: u16, cmd: u8) {
-	unsafe { asm!("out dx, al", in("dx") port, in("al") cmd); }
 }
