@@ -5,10 +5,9 @@
 
 mod arch    { pub mod boot; }
 mod vga     { pub mod vga_buffer; }
-// mod memory;
 mod screen;
 
-use crate::vga::vga_buffer::{ColorCode, Color, BUFFER_HEIGHT};
+use crate::vga::vga_buffer::{ColorCode, Color};
 use crate::vga::vga_buffer;
 use crate::screen::Screen;
 use core::panic::PanicInfo;
@@ -21,10 +20,7 @@ fn panic(info: &PanicInfo) -> ! {
     loop {}
 }
 
-pub fn outb(port: u16, cmd: u8) {
-	unsafe { asm!("out dx, al", in("dx") port, in("al") cmd); }
-}
-
+// Funcion para iteractuar con los puertos
 pub fn inb(port: u16) -> u8 {
 	let mut input_byte: u8;
 	unsafe { asm!("in al, dx", in("dx") port, out("al") input_byte); }
@@ -34,21 +30,17 @@ pub fn inb(port: u16) -> u8 {
 /// Punto de entrada del bootloader
 #[no_mangle]
 pub extern "C" fn _start() {
-    // Init Global Description Table
-    // init_gdt();
     let mut screens = [
         Screen::new(ColorCode::new(Color::Yellow, Color::Black)),
         Screen::new(ColorCode::new(Color::Cyan, Color::Black)),
     ];
     let mut current_screen = 0;
     screens[current_screen].clear();
-    println!("Hello World{}", "!");
+    println!("{}", "42");
 	loop {
 		if inb(0x64) & 1 != 0 {
 			let inb = inb(0x60);
-            // println!("intento {} intento\n", inb);
 			let keycode = keyboard_to_ascii(inb);
-            // println!("nani {} nani\n", keycode);
 
             match keycode {
                 '1' | '2' => {
@@ -177,7 +169,6 @@ static KEYBOARD: [char; 256] = [
     '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
     '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'
 ];
-
 
 fn keyboard_to_ascii(key: u8) -> char {
 	return KEYBOARD[key as usize];

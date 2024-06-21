@@ -1,5 +1,4 @@
-use crate::vga::vga_buffer::{ColorCode, Color, BUFFER_HEIGHT, Writer, Buffer};
-use crate::vga::vga_buffer;
+use crate::vga::vga_buffer::{ColorCode, BUFFER_HEIGHT, Writer, Buffer};
 
 /// Structure representing a single screen
 pub struct Screen {

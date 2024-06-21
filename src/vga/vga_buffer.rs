@@ -110,13 +110,6 @@ impl Writer {
     }
 
     pub fn new_line(&mut self) {
-        // if self.row_position + 1 >= BUFFER_HEIGHT {
-        //     self.scroll_up();
-        // } else {
-        //     self.row_position += 1;
-        // }
-        // self.clear_row(BUFFER_HEIGHT - 1);
-        // self.column_position = 0;
         for row in 1..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
                 let character = self.buffer.chars[row][col];
@@ -141,13 +134,11 @@ impl Writer {
     pub fn update_cursor(&mut self, row: usize, col: usize) {
         let pos = row * BUFFER_WIDTH + col;
 
-        unsafe {
-            outb(0x3D4, 0x0F);
-            outb(0x3D5, (pos & 0xFF) as u8);
+        outb(0x3D4, 0x0F);
+        outb(0x3D5, (pos & 0xFF) as u8);
 
-            outb(0x3D4, 0x0E);
-            outb(0x3D5, ((pos >> 8) & 0xFF) as u8);
-        }
+        outb(0x3D4, 0x0E);
+        outb(0x3D5, ((pos >> 8) & 0xFF) as u8);
     }
 
     pub fn write_string(&mut self, s: &str) {
@@ -171,7 +162,6 @@ impl fmt::Write for Writer {
         Ok(())
     }
 }
-
 
 use lazy_static::lazy_static;
 use spin::Mutex;
@@ -205,24 +195,5 @@ pub fn _print(args: ::core::fmt::Arguments) {
 
 // Funcion para iteractuar con los puertos
 pub fn outb(port: u16, cmd: u8) {
-    unsafe { asm!("out dx, al", in("dx") port, in("al") cmd); }
-}
-
-pub fn inb(port: u16) -> u8 {
-    let mut input_byte: u8;
-    unsafe { asm!("in al, dx", in("dx") port, out("al") input_byte); }
-    input_byte
-}
-
-pub fn update_cursor(row: usize, col: usize) {
-
-    let pos = row * BUFFER_WIDTH + col;
-
-    unsafe {
-        outb(0x3D4, 0x0F);
-        outb(0x3D5, (pos & 0xFF) as u8);
-        
-        outb(0x3D4, 0x0E);
-        outb(0x3D5, ((pos >> 8) & 0xFF) as u8);
-    }
+	unsafe { asm!("out dx, al", in("dx") port, in("al") cmd); }
 }
