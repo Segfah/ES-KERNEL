@@ -14,6 +14,12 @@ SECTIONS
         *(.text)
     }
 
-	.data : { *(.data) }
-	.bss  : { *(.bss)  }
+    .data : { *(.data) }
+    .bss  : { *(.bss)  }
+
+    /* Adding a section for the Global Descriptor Table (GDT) */
+    .gdt 0x00000800 : 
+    {
+        KEEP(*(.gdt))
+    }
 }

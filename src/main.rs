@@ -7,6 +7,7 @@ mod arch    { pub mod boot; }
 mod vga     { pub mod vga_buffer; }
 mod screen;
 mod keyboard;
+pub mod gdt;
 
 use crate::vga::vga_buffer::{ColorCode, Color};
 use crate::vga::vga_buffer;
@@ -14,6 +15,10 @@ use crate::screen::Screen;
 use core::panic::PanicInfo;
 use core::arch::asm;
 use crate::keyboard::{keyboard_to_ascii};
+
+use crate::gdt::load_gdt;
+use crate::gdt::test_gdt;
+
 
 /// Cette fonction est invoquée lorsque le système panique
 #[panic_handler]
@@ -32,12 +37,15 @@ pub fn inb(port: u16) -> u8 {
 /// Punto de entrada del bootloader
 #[no_mangle]
 pub extern "C" fn _start() {
+    load_gdt();
+    print_stack();
+    //test_gdt();
     let mut screens = [
         Screen::new(ColorCode::new(Color::Yellow, Color::Black)),
         Screen::new(ColorCode::new(Color::Cyan, Color::Black)),
     ];
     let mut current_screen = 0;
-    screens[current_screen].clear();
+    //screens[current_screen].clear();
     println!("{}", "42");
 	loop {
 		if inb(0x64) & 1 != 0 {
@@ -63,5 +71,21 @@ pub extern "C" fn _start() {
                 }
             }
 	    }
+    }
+}
+
+
+// Imprimir la pila del kernel para depuración
+pub fn print_stack() {
+    unsafe {
+        let esp: u32;
+        asm!("mov {}, esp", out(reg) esp);
+        println!("Valor del stack pointer: {:#010x}", esp);
+        // Imprimir algunos valores desde el stack para depuración
+        let stack_ptr = esp as *const u32;
+        for i in 0..10 {  // Imprimir los primeros 10 elementos del stack
+            let value = *stack_ptr.offset(i);
+            println!("Stack[{}]: {:#010x}", i, value);
+        }
     }
 }
