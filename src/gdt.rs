@@ -99,4 +99,14 @@ pub fn test_gdt() {
     println!("Valor actual del stack pointer (ESP): {:#010x}", esp);
     assert!(esp > 0x0000_7000, "El valor del stack pointer parece inválido");
     println!("El stack del kernel esta configurado correctamente.\n");
+    //test_gdt_multiple_loads();
+}
+
+// Nueva prueba: Verificar integridad del GDT tras múltiples cargas
+pub fn test_gdt_multiple_loads() {
+    println!("Iniciando prueba de múltiples cargas de GDT...\n");
+    for _ in 0..5 {
+        load_gdt();
+    }
+    println!("Carga de GDT realizada 5 veces sin errores.\n");
 }
