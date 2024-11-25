@@ -39,7 +39,7 @@ pub fn inb(port: u16) -> u8 {
 pub extern "C" fn _start() {
     load_gdt();
     print_stack();
-    //test_gdt();
+    test_gdt();
     let mut screens = [
         Screen::new(ColorCode::new(Color::Yellow, Color::Black)),
         Screen::new(ColorCode::new(Color::Cyan, Color::Black)),

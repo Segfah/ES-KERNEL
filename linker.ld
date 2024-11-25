@@ -2,6 +2,11 @@ OUTPUT_FORMAT(elf32-i386)
 ENTRY(_start)
 SECTIONS
 {
+    /* Adding a section for the Global Descriptor Table (GDT) */
+    .gdt 0x00000800 : 
+    {
+        KEEP(*(.gdt))
+    }
     . = 0x100000;
 
     .multiboot_header :
@@ -17,9 +22,4 @@ SECTIONS
     .data : { *(.data) }
     .bss  : { *(.bss)  }
 
-    /* Adding a section for the Global Descriptor Table (GDT) */
-    .gdt 0x00000800 : 
-    {
-        KEEP(*(.gdt))
-    }
 }

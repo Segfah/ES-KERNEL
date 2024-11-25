@@ -40,6 +40,7 @@ struct GDT {
     user_stack: SegmentDescriptor,
 }
 
+#[link_section = ".gdt"]
 static GDT_TABLE: GDT = GDT {
     null: SegmentDescriptor::new(0, 0, 0, 0),
     kernel_code: SegmentDescriptor::new(0, 0xFFFFF, 0x9A, 0xCF),
@@ -75,6 +76,8 @@ pub fn load_gdt() {
 
 // Pruebas integradas para verificar GDT y Stack
 pub fn test_gdt() {
+    println!("Dirección de GDT_TABLE: {:#010x}", &GDT_TABLE as *const _ as u32);
+
     println!("Iniciando pruebas de la GDT y el stack...\n");
     
     // Verificar que la GDT haya sido cargada correctamente
